@@ -506,3 +506,22 @@ BEGIN
 SELECT SUM(yield_weight) INTO total_weight FROM `yield_stat` WHERE plan_id = p_plan_id;
 END$$
 DELIMITER ;
+
+-- 【补充 M3视图】设备离线最后活动时间监控
+CREATE OR REPLACE VIEW `v_offline_alerts` AS
+SELECT s.sensor_id, s.sensor_name, MAX(sd.collect_time) AS last_active_time
+FROM `sensor` s LEFT JOIN `sensor_data` sd ON s.sensor_id = sd.sensor_id
+WHERE s.status = '离线' GROUP BY s.sensor_id, s.sensor_name;
+
+-- 【补充 M4视图】每月灌溉用水量统计
+CREATE OR REPLACE VIEW `v_water_stat` AS
+SELECT p.plot_id, p.plot_name, DATE_FORMAT(ir.irrigation_time, '%Y-%m') AS irrigation_month,
+       COUNT(ir.record_id) AS irrigation_count, SUM(ir.water_amount) AS total_water_amount,
+       AVG(ir.water_amount) AS avg_water_amount
+FROM `plot` p LEFT JOIN `irrigation_record` ir ON p.plot_id = ir.plot_id
+GROUP BY p.plot_id, p.plot_name, DATE_FORMAT(ir.irrigation_time, '%Y-%m');
+
+-- 【补充 M5视图】农事操作分类统计
+CREATE OR REPLACE VIEW `v_log_summary` AS
+SELECT operation_type, COUNT(*) AS total_num
+FROM `farm_log` GROUP BY operation_type;
