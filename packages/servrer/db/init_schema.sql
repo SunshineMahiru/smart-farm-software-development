@@ -213,6 +213,28 @@ CREATE TABLE `sensor_data` (
                                CONSTRAINT `fk_data_sensor` FOREIGN KEY (`sensor_id`) REFERENCES `sensor` (`sensor_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='时序监测数据表';
 
+-- 14. AI 农情微气候日报表 (Member 3 - AI 聚合与推送)
+DROP TABLE IF EXISTS `iot_daily_report`;
+CREATE TABLE `iot_daily_report` (
+                                   `report_id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日报ID',
+                                   `report_date` DATE NOT NULL COMMENT '日报日期',
+                                   `generated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '生成时间',
+                                   `data_start_time` DATETIME NOT NULL COMMENT '统计开始时间',
+                                   `data_end_time` DATETIME NOT NULL COMMENT '统计结束时间',
+                                   `avg_temperature` DECIMAL(5,2) DEFAULT NULL COMMENT '平均温度',
+                                   `min_temperature` DECIMAL(5,2) DEFAULT NULL COMMENT '最低温度',
+                                   `max_temperature` DECIMAL(5,2) DEFAULT NULL COMMENT '最高温度',
+                                   `avg_humidity` DECIMAL(5,2) DEFAULT NULL COMMENT '平均湿度',
+                                   `min_humidity` DECIMAL(5,2) DEFAULT NULL COMMENT '最低湿度',
+                                   `max_humidity` DECIMAL(5,2) DEFAULT NULL COMMENT '最高湿度',
+                                   `avg_soil_moisture` DECIMAL(5,2) DEFAULT NULL COMMENT '平均土壤湿度',
+                                   `avg_light_intensity` DECIMAL(8,2) DEFAULT NULL COMMENT '平均光照强度',
+                                   `total_alerts` INT NOT NULL DEFAULT 0 COMMENT '告警总数',
+                                   `pending_alerts` INT NOT NULL DEFAULT 0 COMMENT '未处理告警数',
+                                   `report_content` TEXT NOT NULL COMMENT '诊断报告内容',
+                                   UNIQUE KEY `uk_report_date` (`report_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI 农情微气候日报表';
+
 
 -- =========================================================================
 -- 全局统一索引创建 (整合 M1, M3, M4, M5)
@@ -233,6 +255,7 @@ CREATE INDEX `idx_harvest_date` ON `yield_stat` (`harvest_date`);
 CREATE INDEX `idx_sensor_type` ON `sensor` (`sensor_type`);
 CREATE INDEX `idx_collect_time` ON `sensor_data` (`collect_time`);
 CREATE INDEX `idx_sensor_time` ON `sensor_data` (`sensor_id`, `collect_time` DESC);
+CREATE INDEX `idx_iot_daily_report_generated_at` ON `iot_daily_report` (`generated_at` DESC);
 
 
 -- =========================================================================
