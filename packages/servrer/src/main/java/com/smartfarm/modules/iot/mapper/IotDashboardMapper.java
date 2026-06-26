@@ -14,12 +14,12 @@ public interface IotDashboardMapper {
 
     @Select("""
             SELECT
-                (SELECT COUNT(*) FROM sensor) AS totalSensors,
-                (SELECT COUNT(*) FROM sensor WHERE status = '在线') AS onlineSensors,
-                (SELECT COUNT(*) FROM sensor WHERE status = '离线') AS offlineSensors,
+                (SELECT COUNT(*) FROM sensor WHERE deleted = 0) AS totalSensors,
+                (SELECT COUNT(*) FROM sensor WHERE deleted = 0 AND status = '鍦ㄧ嚎') AS onlineSensors,
+                (SELECT COUNT(*) FROM sensor WHERE deleted = 0 AND status = '绂荤嚎') AS offlineSensors,
                 (SELECT COUNT(*) FROM sensor_data WHERE DATE(collect_time) = CURDATE()) AS todayDataCount,
                 (SELECT COUNT(*) FROM device_alert) AS totalAlerts,
-                (SELECT COUNT(*) FROM device_alert WHERE status = '未处理') AS pendingAlerts,
+                (SELECT COUNT(*) FROM device_alert WHERE status = '鏈鐞?) AS pendingAlerts,
                 (SELECT MAX(collect_time) FROM sensor_data) AS latestCollectTime
             """)
     IotOverviewVO selectOverview();

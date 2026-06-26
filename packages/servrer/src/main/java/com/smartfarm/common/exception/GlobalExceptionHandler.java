@@ -3,32 +3,72 @@ package com.smartfarm.common.exception;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotRoleException;
 import com.smartfarm.common.utils.Result;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 拦截 Sa-Token 未登录异常
+    @ExceptionHandler(BusinessException.class)
+    public Result<?> handleBusinessException(BusinessException e) {
+        log.warn("Business exception: {}", e.getMessage());
+        return Result.error(e.getCode(), e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Result<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .findFirst()
+                .orElse("Request validation failed");
+        return Result.error(400, message);
+    }
+
+    @ExceptionHandler(BindException.class)
+    public Result<?> handleBindException(BindException e) {
+        String message = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .findFirst()
+                .orElse("Request bind failed");
+        return Result.error(400, message);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public Result<?> handleConstraintViolationException(ConstraintViolationException e) {
+        String message = e.getConstraintViolations()
+                .stream()
+                .map(item -> item.getMessage())
+                .collect(Collectors.joining("; "));
+        return Result.error(400, message);
+    }
+
     @ExceptionHandler(NotLoginException.class)
-    public Result<?> handlerNotLoginException(NotLoginException e) {
-        log.warn("用户未登录或Token已过期: {}", e.getMessage());
-        return Result.error(401, "请先登录系统");
+    public Result<?> handleNotLoginException(NotLoginException e) {
+        log.warn("Unauthenticated access: {}", e.getMessage());
+        return Result.error(401, "Please login first");
     }
 
-    // 拦截越权访问异常
     @ExceptionHandler(NotRoleException.class)
-    public Result<?> handlerNotRoleException(NotRoleException e) {
-        log.warn("越权访问: {}", e.getMessage());
-        return Result.error(403, "当前角色无权限进行此操作");
+    public Result<?> handleNotRoleException(NotRoleException e) {
+        log.warn("Unauthorized role access: {}", e.getMessage());
+        return Result.error(403, "Current role has no permission to perform this action");
     }
 
-    // 兜底拦截其他所有未知异常
     @ExceptionHandler(Exception.class)
-    public Result<?> handlerException(Exception e) {
-        log.error("系统内部异常: ", e);
-        return Result.error(500, "系统繁忙，请稍后再试：" + e.getMessage());
+    public Result<?> handleException(Exception e) {
+        log.error("System exception", e);
+        return Result.error(500, "System busy, please retry later: " + e.getMessage());
     }
 }
