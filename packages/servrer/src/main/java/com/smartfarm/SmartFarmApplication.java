@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling // 开启定时任务支持 (为成员2和3铺路)
 @MapperScan("com.smartfarm.modules.**.mapper") // 扫描所有模块的 Mapper
 public class SmartFarmApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(SmartFarmApplication.class, args);
         System.out.println("===============================================");
