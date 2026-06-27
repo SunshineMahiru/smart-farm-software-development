@@ -2,11 +2,14 @@ package com.smartfarm.modules.iot.mapper;
 
 import com.smartfarm.modules.iot.vo.DeviceAlertVO;
 import com.smartfarm.modules.iot.vo.IotOverviewVO;
+import com.smartfarm.modules.iot.vo.SensorHistoryPointVO;
+import com.smartfarm.modules.iot.vo.SensorHistoryTrendVO;
 import com.smartfarm.modules.iot.vo.SensorRecentDataVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -55,4 +58,32 @@ public interface IotDashboardMapper {
             LIMIT #{limit}
             """)
     List<DeviceAlertVO> selectLatestAlerts(@Param("limit") Integer limit);
+
+    @Select("""
+            SELECT
+                s.sensor_id AS sensorId,
+                s.sensor_name AS sensorName,
+                s.sensor_type AS sensorType
+            FROM sensor s
+            WHERE s.sensor_id = #{sensorId}
+              AND s.deleted = 0
+            LIMIT 1
+            """)
+    SensorHistoryTrendVO selectSensorTrendMeta(@Param("sensorId") Long sensorId);
+
+    @Select("""
+            SELECT
+                collect_time AS collectTime,
+                temperature,
+                humidity
+            FROM sensor_data
+            WHERE sensor_id = #{sensorId}
+              AND collect_time >= #{startTime}
+              AND collect_time <= #{endTime}
+            ORDER BY collect_time ASC
+            """)
+    List<SensorHistoryPointVO> selectHistoryTrendPoints(
+            @Param("sensorId") Long sensorId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime);
 }

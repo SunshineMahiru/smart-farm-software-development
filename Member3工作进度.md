@@ -47,6 +47,12 @@
 - 新增 `IotDailyReportScheduler`，按每天 `7:00` 自动聚合近 24 小时时序数据与告警数据，生成农情日报。
 - 日报生成后自动调用 WebSocket 广播给在线用户，先以规则化自然语言完成“AI 风格诊断”骨架，后续可继续接 Spring AI 真正模型接口。
 
+## 2026.6.27
+
+- 新增 `GET /iot/history/trend?sensorId=1&hours=24`，用于返回某个传感器近若干小时的温湿度历史曲线数据。
+- 返回结构补充为图表友好格式，直接包含 `sensorId`、`sensorName`、`sensorType`、时间范围和按时间升序排列的 `points` 列表，减少前端二次转换。
+- 查询语句严格使用 `sensor_id + collect_time` 范围条件，直接服务后续双 Y 轴温湿度曲线图页面。
+
 ## 当前已完成能力清单
 
 ### 后端接口
@@ -54,6 +60,7 @@
 - `GET /iot/overview`
 - `GET /iot/recent-data?sensorId=...&limit=...`
 - `GET /iot/alerts/latest?limit=...`
+- `GET /iot/history/trend?sensorId=...&hours=24`
 - `POST /iot/reports/generate`
 - `GET /iot/reports/latest`
 
@@ -62,6 +69,7 @@
 - 已建立 `modules/iot` 包结构。
 - 已建立 IoT 查询 Service / Mapper / VO 基础组织方式。
 - 已建立日报聚合、日报落库、日报广播推送的第一版骨架。
+- 已补某传感器近 24 小时温湿度曲线接口，可直接服务前端折线图。
 - 已在数据库初始化脚本中加入 `iot_daily_report` 表。
 - 已通过 `mvn -DskipTests compile` 编译验证。
 
@@ -123,7 +131,7 @@
 说明：严格使用时间范围查询、索引命中查询，不要做全表扫描；避免深度分页导致性能差。
 完成标准：常用查询能稳定走 `idx_collect_time` 或 `idx_sensor_time`。
 
-- 任务 11：补充按时间范围和传感器维度的接口。
+- 任务 11（已完成）：补充按时间范围和传感器维度的接口。
 说明：至少补一个接口用于“某传感器近 24 小时温湿度曲线”，必要时返回前端图表友好的结构。
 完成标准：前端折线图不需要自己再做大量数据转换。
 
@@ -204,6 +212,7 @@
   - `GET /iot/overview`
   - `GET /iot/recent-data?sensorId=1&limit=10`
   - `GET /iot/alerts/latest?limit=5`
+  - `GET /iot/history/trend?sensorId=1&hours=24`
   - `POST /iot/reports/generate`
   - `GET /iot/reports/latest`
 - 数据库验证重点：

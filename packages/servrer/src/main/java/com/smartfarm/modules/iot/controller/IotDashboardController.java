@@ -4,6 +4,7 @@ import com.smartfarm.common.utils.Result;
 import com.smartfarm.modules.iot.service.IotDashboardService;
 import com.smartfarm.modules.iot.vo.DeviceAlertVO;
 import com.smartfarm.modules.iot.vo.IotOverviewVO;
+import com.smartfarm.modules.iot.vo.SensorHistoryTrendVO;
 import com.smartfarm.modules.iot.vo.SensorRecentDataVO;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -40,5 +41,12 @@ public class IotDashboardController {
     public Result<List<DeviceAlertVO>> getLatestAlerts(
             @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer limit) {
         return Result.success(iotDashboardService.getLatestAlerts(limit));
+    }
+
+    @GetMapping("/history/trend")
+    public Result<SensorHistoryTrendVO> getHistoryTrend(
+            @RequestParam @Min(1) Long sensorId,
+            @RequestParam(defaultValue = "24") @Min(1) @Max(168) Integer hours) {
+        return Result.success(iotDashboardService.getHistoryTrend(sensorId, hours));
     }
 }
