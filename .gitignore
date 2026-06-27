@@ -1,3 +1,47 @@
-packages/servrer/target/
-.idea
-.vscode
+# ==================================
+# 智慧农场全局忽略配置 (Monorepo版)
+# ==================================
+
+# 1. 常见 IDE 与编辑器配置 (防冲突核心)
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+
+# 2. 操作系统生成文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 3. 前端 Node.js (packages/web)
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+package-lock.json 
+# (注：如果团队统一下发包版本，package-lock.json可不忽略，但推荐使用统一环境)
+
+# 4. 后端 Java/Spring Boot (packages/server)
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+# 5. 其他缓存与临时文件
+.temp/
+.cache/
+logs/
