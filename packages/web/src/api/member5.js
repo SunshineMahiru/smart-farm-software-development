@@ -34,7 +34,7 @@ export async function ensureLogin() {
     localStorage.setItem('userId', data.userId)
     return true
   } catch (error) {
-    ElMessage.warning(`后端登录未完成，页面将展示示例数据：${error.message}`)
+    ElMessage.warning(`后端登录未完成，页面将展示真实空状态：${error.message}`)
     return false
   }
 }
