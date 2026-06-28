@@ -10,6 +10,8 @@
     <groupId>cn.edu.huanu</groupId>
     <artifactId>smart-farm-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
     <name>smart-farm-server</name>
     <description>智慧农场数字孪生管控平台 - 后端引擎</description>
 

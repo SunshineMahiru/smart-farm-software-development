@@ -2,6 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "java",
+      "name": "SmartFarmApplication",
+      "request": "launch",
+      "mainClass": "com.smartfarm.SmartFarmApplication",
+      "projectName": "smart-farm-server"
+    },
+    {
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
       "request": "launch",
