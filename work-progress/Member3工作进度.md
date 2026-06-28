@@ -5,7 +5,7 @@
 ### 1. 身份与边界
 
 - 成员3职责固定为：`sensor`、`sensor_data`、`device_alert` 三个业务域，以及与其直接相关的 AI 农情分析、时序聚合、WebSocket 主动推送、数字孪生可视化页面。
-- 后端代码只能放在 `packages/servrer/src/main/java/com/smartfarm/modules/iot` 下继续扩展。
+- 后端代码只能放在 `packages/server/src/main/java/com/smartfarm/modules/iot` 下继续扩展。
 - 前端代码只能优先放在 `packages/web/src/views/iot`、`packages/web/src/components` 下的 IoT 相关区域，不要越界去改其他成员的主业务页面。
 - 如需复用系统能力，只能复用现有公共层，例如 `common/utils`、`common/websocket`、`common/security`，不要跨模块直接硬耦合别人的业务 Service。
 
@@ -21,7 +21,7 @@
 - 鉴权方式：必须兼容现有 `Sa-Token` 体系，请求头使用 `Authorization`。
 - 文档要求：后续新增 Controller、DTO、接口说明时，要满足 Swagger / Knife4j 或 Apifox 可联调要求。
 - Git 要求：在个人 `feat-*` 分支开发，禁止直接推送 `main/master`。
-- 数据库要求：统一维护 `packages/servrer/db/init_schema.sql`，如果需要增表、增索引、增视图，必须在统一脚本里维护，不能只改本地库不改脚本。
+- 数据库要求：统一维护 `packages/server/db/init_schema.sql`，如果需要增表、增索引、增视图，必须在统一脚本里维护，不能只改本地库不改脚本。
 
 ### 3. 成员3最终目标
 
@@ -36,7 +36,7 @@
 
 ## 2026.6.26
 
-- 在 `packages/servrer/src/main/java/com/smartfarm/modules/iot` 新增 IoT 后端模块第一批接口。
+- 在 `packages/server/src/main/java/com/smartfarm/modules/iot` 新增 IoT 后端模块第一批接口。
 - 实现 `GET /iot/overview`，用于返回传感器总数、在线数、离线数、今日采集条数、告警总数、未处理告警数、最近采集时间。
 - 实现 `GET /iot/recent-data?sensorId=...&limit=...`，用于查询指定传感器的最近时序数据。
 - 实现 `GET /iot/alerts/latest?limit=...`，用于查询最新设备告警列表，并联表返回地块名称。
@@ -52,6 +52,13 @@
 - 新增 `GET /iot/history/trend?sensorId=1&hours=24`，用于返回某个传感器近若干小时的温湿度历史曲线数据。
 - 返回结构补充为图表友好格式，直接包含 `sensorId`、`sensorName`、`sensorType`、时间范围和按时间升序排列的 `points` 列表，减少前端二次转换。
 - 查询语句严格使用 `sensor_id + collect_time` 范围条件，直接服务后续双 Y 轴温湿度曲线图页面。
+- 已补齐 `sensor` 传感器管理接口：分页查询、详情、在线状态分页、新增、修改、删除。
+
+## 2026.6.28
+
+- 为成员3现有 IoT 接口补充了第一批 Swagger/OpenAPI 注解，覆盖 `IotDashboardController`、`IotReportController`、`SensorManageController`。
+- 为 `SensorSaveRequest`、`IotOverviewVO`、`SensorRecentDataVO`、`DeviceAlertVO`、`SensorHistoryTrendVO`、`SensorHistoryPointVO`、`SensorOnlineStatusVO`、`IotDailyReportVO` 增加字段级接口说明，便于 Swagger 页面直接联调。
+- 同步修正进度文档中的后端真实路径，由 `packages/servrer` 统一更正为 `packages/server`。
 
 ## 当前已完成能力清单
 
@@ -61,6 +68,12 @@
 - `GET /iot/recent-data?sensorId=...&limit=...`
 - `GET /iot/alerts/latest?limit=...`
 - `GET /iot/history/trend?sensorId=...&hours=24`
+- `GET /iot/sensors`
+- `GET /iot/sensors/{sensorId}`
+- `GET /iot/sensors/online-status`
+- `POST /iot/sensors`
+- `PUT /iot/sensors/{sensorId}`
+- `DELETE /iot/sensors/{sensorId}`
 - `POST /iot/reports/generate`
 - `GET /iot/reports/latest`
 
@@ -68,26 +81,28 @@
 
 - 已建立 `modules/iot` 包结构。
 - 已建立 IoT 查询 Service / Mapper / VO 基础组织方式。
+- 已建立 `sensor` 传感器管理 CRUD 与在线状态分页查询。
 - 已建立日报聚合、日报落库、日报广播推送的第一版骨架。
 - 已补某传感器近 24 小时温湿度曲线接口，可直接服务前端折线图。
 - 已在数据库初始化脚本中加入 `iot_daily_report` 表。
+- 已补第一批 Swagger/OpenAPI 注解与字段说明。
 - 已通过 `mvn -DskipTests compile` 编译验证。
 
 ### 当前不足
 
-- 还没有完成 `sensor`、`sensor_data`、`device_alert` 的完整 CRUD。
+- `sensor` 已完成基础 CRUD，但 `device_alert`、`sensor_data` 仍未完成完整管理能力。
 - 还没有实现“写入时序数据后自动判定是否触发告警”的业务逻辑。
 - 还没有真正接入 `Spring AI` 大模型接口。
 - 还没有实现前端 `2.5D` 热力图页面。
 - 还没有实现前端双 Y 轴 ECharts 页面。
-- 还没有完成 IoT 模块的 Swagger 注解补齐。
+- IoT 模块已补第一批 Swagger 注解，但 `device_alert`、`sensor_data` 等后续接口完成后还需要继续补齐。
 - 还没有补测试数据校验、异常边界验证、接口联调说明。
 
 ## 后续任务总清单
 
 ### 第一阶段：把成员3后端做完整
 
-- 任务 1：补齐 `sensor` 传感器管理 CRUD。
+- 任务 1（已完成）：补齐 `sensor` 传感器管理 CRUD。
 说明：需要有新增、分页查询、详情、修改、删除接口，字段至少覆盖 `plot_id`、`sensor_name`、`sensor_type`、`install_date`、`status`。
 完成标准：前端可以对传感器做完整维护；接口返回统一 `Result<T>`；具备基础参数校验。
 
@@ -103,7 +118,7 @@
 说明：新增一个写入传感器数据接口，插入 `sensor_data` 后按阈值判定是否生成 `device_alert`。阈值可以先按温度、湿度、土壤湿度做固定规则。
 完成标准：调用一次数据写入接口后，如果数据越界，数据库中能新增一条告警记录。
 
-- 任务 5：补齐成员3后端注解和接口文档。
+- 任务 5（进行中）：补齐成员3后端注解和接口文档。
 说明：Controller、请求参数、返回对象补 Swagger / OpenAPI 注解说明。
 完成标准：Swagger 页面里能清楚看到 IoT 接口的用途、参数和返回值。
 
@@ -194,7 +209,7 @@
 
 ## 后续开发时必须自检的规则
 
-- 新增数据库结构时，必须同步修改 `packages/servrer/db/init_schema.sql`。
+- 新增数据库结构时，必须同步修改 `packages/server/db/init_schema.sql`。
 - 新增后端类时，必须放在 `modules/iot` 下，不要破坏目录规范。
 - 新增接口时，必须复用统一返回体 `Result<T>`。
 - 新增需要登录的接口时，必须兼容现有 `Sa-Token` 鉴权体系。
@@ -205,8 +220,8 @@
 
 ## 常用验证路径
 
-- 编译验证：在 `packages/servrer` 下执行 `mvn -DskipTests compile`。
-- 后端启动：在 `packages/servrer` 下执行 `mvn spring-boot:run`。
+- 编译验证：在 `packages/server` 下执行 `mvn -DskipTests compile`。
+- 后端启动：在 `packages/server` 下执行 `mvn spring-boot:run`。
 - 登录拿 Token：`POST /sys/user/login?username=admin&password=123456`
 - 已完成接口：
   - `GET /iot/overview`
