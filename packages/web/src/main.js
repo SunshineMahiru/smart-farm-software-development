@@ -1,9 +1,12 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css' // 引入 Element Plus 的样式表
+import router from './router'
+import 'element-plus/dist/index.css'
+import './styles/global.css'
 
 const app = createApp(App)
 
 app.use(ElementPlus)
+app.use(router)
 app.mount('#app')
