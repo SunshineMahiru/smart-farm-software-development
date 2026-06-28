@@ -26,10 +26,13 @@ public class StpInterfaceImpl implements StpInterface {
         permissions.add("supplier:read");
         permissions.add("sensor:read");
         permissions.add("farm:read");
+        permissions.add("plot:read");
+        permissions.add("user:read");
         if ("管理员".equals(role)) {
             permissions.add("supplier:write");
             permissions.add("sensor:write");
             permissions.add("farm:write");
+            permissions.add("plot:write");
             permissions.add("user:manage");
         }
         return permissions;

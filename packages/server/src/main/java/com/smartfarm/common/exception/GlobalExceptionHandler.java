@@ -1,6 +1,7 @@
 package com.smartfarm.common.exception;
 
 import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
 import com.smartfarm.common.utils.Result;
 import jakarta.validation.ConstraintViolationException;
@@ -64,6 +65,12 @@ public class GlobalExceptionHandler {
     public Result<?> handleNotRoleException(NotRoleException e) {
         log.warn("Unauthorized role access: {}", e.getMessage());
         return Result.error(403, "Current role has no permission to perform this action");
+    }
+
+    @ExceptionHandler(NotPermissionException.class)
+    public Result<?> handleNotPermissionException(NotPermissionException e) {
+        log.warn("Unauthorized permission access: {}", e.getMessage());
+        return Result.error(403, "Current account has no permission to perform this action");
     }
 
     @ExceptionHandler(Exception.class)
