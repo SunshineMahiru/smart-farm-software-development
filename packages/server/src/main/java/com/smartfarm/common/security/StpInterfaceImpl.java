@@ -5,6 +5,7 @@ import com.smartfarm.modules.sys.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,7 +17,22 @@ public class StpInterfaceImpl implements StpInterface {
 
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
-        return Collections.emptyList();
+        String role = userService.getRoleByUserId(Long.parseLong(String.valueOf(loginId)));
+        if (role == null || role.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        List<String> permissions = new ArrayList<>();
+        permissions.add("supplier:read");
+        permissions.add("sensor:read");
+        permissions.add("farm:read");
+        if ("管理员".equals(role)) {
+            permissions.add("supplier:write");
+            permissions.add("sensor:write");
+            permissions.add("farm:write");
+            permissions.add("user:manage");
+        }
+        return permissions;
     }
 
     @Override
