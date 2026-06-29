@@ -196,4 +196,39 @@
 
 - 当前仓库为本项目统一代码仓库
 - 数据库初始化脚本位于 `packages/servrer/db/init_schema.sql`
+- Windows 一键启动脚本位于 `scripts/start-dev.ps1` 与 `scripts/start-dev.cmd`
 - 后续开发应围绕统一 PRD、统一分工、统一数据库脚本和统一分支规范推进
+
+## 本地启动
+
+### 环境要求
+
+- JDK 17
+- Maven
+- Node.js 18.x
+- MySQL 8.x
+
+### 启动前准备
+
+- 确保 MySQL 已启动，并已导入 `smart_farm` 数据库
+- 默认后端端口为 `8080`
+- 默认前端 Vite 端口为 `5173`，若被占用会顺延到其他可用端口
+
+### Windows 一键启动
+
+- 双击 `scripts/start-dev.cmd`
+- 或在 PowerShell 中执行 `scripts/start-dev.ps1`
+
+脚本会自动：
+
+- 后台启动后端 `packages/server`
+- 后台启动前端 `packages/web`
+- 检测启动状态并输出前端访问地址
+- 将日志写入 `scripts/logs`
+
+常见日志文件：
+
+- `scripts/logs/server.out.log`
+- `scripts/logs/server.err.log`
+- `scripts/logs/web.out.log`
+- `scripts/logs/web.err.log`
