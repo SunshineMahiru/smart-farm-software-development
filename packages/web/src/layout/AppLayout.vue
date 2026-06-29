@@ -14,7 +14,7 @@
 
         <div class="member-group" :class="{ active: isMember1Route }">
           <RouterLink to="/sys/users" class="nav-link member-link">
-            <span>成员1</span>
+            <span>系统基建与空间资产</span>
             <i class="arrow">▼</i>
           </RouterLink>
 
@@ -23,9 +23,15 @@
           </div>
         </div>
 
+        <div class="member-group" :class="{ active: isMember2Route }">
+          <RouterLink to="/member2" class="nav-link member-link">
+            <span>实时调度与生命周期</span>
+          </RouterLink>
+        </div>
+
         <div class="member-group" :class="{ active: isMember3Route }">
           <RouterLink to="/iot" class="nav-link member-link">
-            <span>成员3</span>
+            <span>IoT 孪生与 AI 算法</span>
             <i class="arrow">▼</i>
           </RouterLink>
 
@@ -37,9 +43,15 @@
           </div>
         </div>
 
+        <div class="member-group" :class="{ active: isMember4Route }">
+          <RouterLink to="/member4" class="nav-link member-link">
+            <span>农资供应链与核心业务</span>
+          </RouterLink>
+        </div>
+
         <div class="member-group" :class="{ active: isMember5Route }">
           <RouterLink to="/member5" class="nav-link member-link">
-            <span>成员5</span>
+            <span>农场作业与可视化大屏</span>
             <i class="arrow">▼</i>
           </RouterLink>
 
@@ -86,7 +98,9 @@ const member1Menus = computed(() => {
 })
 
 const isMember1Route = computed(() => route.path.startsWith('/sys'))
+const isMember2Route = computed(() => route.path.startsWith('/member2'))
 const isMember3Route = computed(() => route.path.startsWith('/iot'))
+const isMember4Route = computed(() => route.path.startsWith('/member4'))
 const isMember5Route = computed(() => route.path.startsWith('/member5'))
 const userLabel = computed(() => currentUser.value.realName || currentUser.value.username || '已登录用户')
 
@@ -114,7 +128,6 @@ async function logout() {
   try {
     await authApi.logout()
   } catch {
-    // Local logout still clears the invalid token.
   }
   localStorage.removeItem('sa-token')
   localStorage.removeItem('userId')

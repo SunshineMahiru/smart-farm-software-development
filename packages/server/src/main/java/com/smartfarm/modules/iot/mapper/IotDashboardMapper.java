@@ -17,12 +17,12 @@ public interface IotDashboardMapper {
 
     @Select("""
             SELECT
-                (SELECT COUNT(*) FROM sensor WHERE deleted = 0) AS totalSensors,
-                (SELECT COUNT(*) FROM sensor WHERE deleted = 0 AND status = '在线') AS onlineSensors,
-                (SELECT COUNT(*) FROM sensor WHERE deleted = 0 AND status = '离线') AS offlineSensors,
+                (SELECT COUNT(*) FROM sensor) AS totalSensors,
+                (SELECT COUNT(*) FROM sensor WHERE status = _utf8mb4 0xE59CA8E7BABF) AS onlineSensors,
+                (SELECT COUNT(*) FROM sensor WHERE status = _utf8mb4 0xE7A6BBE7BABF) AS offlineSensors,
                 (SELECT COUNT(*) FROM sensor_data WHERE DATE(collect_time) = CURDATE()) AS todayDataCount,
                 (SELECT COUNT(*) FROM device_alert) AS totalAlerts,
-                (SELECT COUNT(*) FROM device_alert WHERE status = '未处理') AS pendingAlerts,
+                (SELECT COUNT(*) FROM device_alert WHERE status = _utf8mb4 0xE69CAAE5A484E79086) AS pendingAlerts,
                 (SELECT MAX(collect_time) FROM sensor_data) AS latestCollectTime
             """)
     IotOverviewVO selectOverview();
@@ -66,7 +66,6 @@ public interface IotDashboardMapper {
                 s.sensor_type AS sensorType
             FROM sensor s
             WHERE s.sensor_id = #{sensorId}
-              AND s.deleted = 0
             LIMIT 1
             """)
     SensorHistoryTrendVO selectSensorTrendMeta(@Param("sensorId") Long sensorId);

@@ -31,8 +31,7 @@ public interface SensorManageMapper extends BaseMapper<Sensor> {
                     FROM sensor_data d
                     WHERE d.sensor_id = s.sensor_id
                 )
-            WHERE s.deleted = 0
-              AND (#{status} IS NULL OR #{status} = '' OR s.status = #{status})
+            WHERE (#{status} IS NULL OR #{status} = '' OR s.status = #{status})
             ORDER BY s.sensor_id DESC
             """)
     IPage<SensorOnlineStatusVO> selectOnlineStatus(Page<SensorOnlineStatusVO> page, @Param("status") String status);

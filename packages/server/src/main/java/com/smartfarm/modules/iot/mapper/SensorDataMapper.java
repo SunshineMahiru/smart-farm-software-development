@@ -30,8 +30,7 @@ public interface SensorDataMapper extends BaseMapper<SensorData> {
             FROM sensor_data sd
             JOIN sensor s ON s.sensor_id = sd.sensor_id
             LEFT JOIN plot p ON p.plot_id = s.plot_id
-            WHERE s.deleted = 0
-              AND (#{sensorId} IS NULL OR sd.sensor_id = #{sensorId})
+            WHERE (#{sensorId} IS NULL OR sd.sensor_id = #{sensorId})
               AND (#{plotId} IS NULL OR s.plot_id = #{plotId})
               AND (#{startTime} IS NULL OR sd.collect_time >= #{startTime})
               AND (#{endTime} IS NULL OR sd.collect_time <= #{endTime})

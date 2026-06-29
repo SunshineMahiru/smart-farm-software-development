@@ -8,6 +8,7 @@ import AlertManageView from '../views/iot/AlertManageView.vue'
 import IotDashboardView from '../views/iot/IotDashboardView.vue'
 import SensorHistoryView from '../views/iot/SensorHistoryView.vue'
 import IotTwinView from '../views/iot/IotTwinView.vue'
+import ModulePlaceholderView from '../views/ModulePlaceholderView.vue'
 import Member5Dashboard from '../views/member5/Member5Dashboard.vue'
 import SupplierPage from '../views/member5/SupplierPage.vue'
 import SensorPage from '../views/member5/SensorPage.vue'
@@ -28,10 +29,12 @@ const routes = [
       { path: '', name: 'home', component: HomeView },
       { path: 'sys/users', name: 'sys-users', component: UserManagePage, meta: { title: '用户权限管理' } },
       { path: 'sys/plots', name: 'sys-plots', component: PlotManagePage, meta: { title: '地块台账管理' } },
+      { path: 'member2', name: 'member2', component: ModulePlaceholderView, meta: { title: '实时调度与生命周期' } },
       { path: 'iot', name: 'iot-dashboard', component: IotDashboardView },
       { path: 'iot/alerts', name: 'iot-alerts', component: AlertManageView },
       { path: 'iot/history', name: 'iot-history', component: SensorHistoryView },
       { path: 'iot/twin', name: 'iot-twin', component: IotTwinView },
+      { path: 'member4', name: 'member4', component: ModulePlaceholderView, meta: { title: '农资供应链与核心业务' } },
       { path: 'member5', name: 'member5', component: Member5Dashboard },
       { path: 'member5/suppliers', name: 'member5-suppliers', component: SupplierPage },
       { path: 'member5/sensors', name: 'member5-sensors', component: SensorPage },
