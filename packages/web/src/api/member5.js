@@ -24,7 +24,17 @@ api.interceptors.response.use(
 )
 
 export async function ensureLogin() {
-  if (localStorage.getItem('sa-token')) return true
+  const token = localStorage.getItem('sa-token')
+  if (token) {
+    try {
+      await api.get('/sys/user/me')
+      return true
+    } catch {
+      localStorage.removeItem('sa-token')
+      localStorage.removeItem('userId')
+    }
+  }
+
   try {
     const data = await api.post('/sys/user/login', {
       username: 'admin01',
