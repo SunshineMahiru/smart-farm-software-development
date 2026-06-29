@@ -12,6 +12,17 @@
       <nav class="nav-links">
         <RouterLink to="/" class="nav-link">首页</RouterLink>
 
+        <div class="member-group" :class="{ active: isMember1Route }">
+          <RouterLink to="/sys/users" class="nav-link member-link">
+            <span>成员1</span>
+            <i class="arrow">▼</i>
+          </RouterLink>
+
+          <div class="member-subnav">
+            <RouterLink v-for="item in member1Menus" :key="item.path" :to="item.path" class="subnav-link">{{ item.title }}</RouterLink>
+          </div>
+        </div>
+
         <div class="member-group" :class="{ active: isMember5Route }">
           <RouterLink to="/member5" class="nav-link member-link">
             <span>成员5</span>
@@ -27,6 +38,11 @@
         </div>
       </nav>
 
+      <div class="user-box">
+        <span>{{ userLabel }}</span>
+        <small>{{ currentUser.role || '未识别角色' }}</small>
+        <el-button size="small" @click="logout">退出</el-button>
+      </div>
     </header>
 
     <main>
@@ -36,12 +52,63 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
+import { authApi } from '../api/member1'
 
 const route = useRoute()
+const router = useRouter()
+const currentUser = ref(readCachedUser())
 
+const member1Menus = computed(() => {
+  const menus = [
+    { title: '地块台账', path: '/sys/plots' },
+  ]
+  if (currentUser.value.role === '管理员') {
+    menus.unshift({ title: '用户权限', path: '/sys/users' })
+  }
+  return menus
+})
+
+const isMember1Route = computed(() => route.path.startsWith('/sys'))
 const isMember5Route = computed(() => route.path.startsWith('/member5'))
+const userLabel = computed(() => currentUser.value.realName || currentUser.value.username || '已登录用户')
+
+function readCachedUser() {
+  try {
+    return JSON.parse(localStorage.getItem('user-info') || '{}')
+  } catch {
+    return {}
+  }
+}
+
+async function loadCurrentUser() {
+  try {
+    const user = await authApi.me()
+    currentUser.value = user
+    localStorage.setItem('user-info', JSON.stringify(user))
+  } catch {
+    localStorage.removeItem('sa-token')
+    localStorage.removeItem('user-info')
+    router.replace({ path: '/login', query: { redirect: route.fullPath } })
+  }
+}
+
+async function logout() {
+  try {
+    await authApi.logout()
+  } catch {
+    // Local logout still clears the invalid token.
+  }
+  localStorage.removeItem('sa-token')
+  localStorage.removeItem('userId')
+  localStorage.removeItem('user-info')
+  ElMessage.success('已退出登录')
+  router.replace('/login')
+}
+
+onMounted(loadCurrentUser)
 </script>
 
 <style scoped>
@@ -100,6 +167,31 @@ const isMember5Route = computed(() => route.path.startsWith('/member5'))
   justify-content: flex-start;
   align-items: center;
   gap: 10px;
+}
+
+.user-box {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 2px 10px;
+  min-width: 178px;
+  padding: 8px 10px;
+  border: 1px solid rgba(23, 39, 28, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.user-box span {
+  color: var(--leaf-dark);
+  font-weight: 900;
+}
+
+.user-box small {
+  color: rgba(23, 39, 28, 0.62);
+}
+
+.user-box .el-button {
+  grid-row: span 2;
 }
 
 .nav-link {
@@ -202,6 +294,11 @@ main {
     width: 100%;
     justify-content: flex-start;
     overflow-x: auto;
+  }
+
+  .user-box {
+    width: 100%;
+    grid-template-columns: 1fr auto;
   }
 }
 

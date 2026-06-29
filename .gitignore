@@ -45,3 +45,6 @@ hs_err_pid*
 .temp/
 .cache/
 logs/
+
+# Local debug notes
+debug-server-run-db-import.md

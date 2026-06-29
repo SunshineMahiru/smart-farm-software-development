@@ -4,10 +4,10 @@
       <div class="hero-copy">
         <p class="eyebrow">Smart Farm Digital Twin</p>
         <h1 class="page-title">智慧农场业务控制台</h1>
-        <p class="hero-text">面向农场主与管理员的综合管理入口。当前先完成成员5负责的权限、供应商、传感器、农事日志与产量统计前端。</p>
+        <p class="hero-text">面向农场主与管理员的综合管理入口。成员1负责系统安全底座、动态菜单、用户权限管理与地块台账，支撑其他业务模块稳定接入。</p>
         <div class="hero-actions">
-          <RouterLink to="/member5" class="primary-link">进入成员5工作台</RouterLink>
-          <RouterLink to="/member5/suppliers" class="ghost-link">查看供应商</RouterLink>
+          <RouterLink to="/sys/users" class="primary-link">用户权限管理</RouterLink>
+          <RouterLink to="/sys/plots" class="ghost-link">地块台账管理</RouterLink>
         </div>
       </div>
       <div class="field-map">
@@ -29,11 +29,11 @@
 import { RouterLink } from 'vue-router'
 
 const modules = [
+  { scope: 'Member 1', title: '用户权限管理', desc: '账号、角色与接口鉴权入口', path: '/sys/users' },
+  { scope: 'Spatial Asset', title: '地块台账', desc: '空间资产、状态流转与基础档案', path: '/sys/plots' },
   { scope: 'Auth & CRUD', title: '成员5工作台', desc: '统一查看负责模块进度', path: '/member5' },
   { scope: 'Supply', title: '供应商管理', desc: '农资供应商档案与状态', path: '/member5/suppliers' },
   { scope: 'IoT CRUD', title: '传感器管理', desc: '设备基础信息与在线状态', path: '/member5/sensors' },
-  { scope: 'Farm Ops', title: '农事日志', desc: '按计划记录日常操作', path: '/member5/farm-logs' },
-  { scope: 'Yield', title: '产量统计', desc: '采收数据与计划汇总', path: '/member5/yields' },
 ]
 </script>
 
