@@ -11,6 +11,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.util.StringUtils;
 
 import java.util.stream.Collectors;
 
@@ -76,6 +77,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public Result<?> handleException(Exception e) {
         log.error("System exception", e);
-        return Result.error(500, "System busy, please retry later: " + e.getMessage());
+        String message = "System busy, please retry later";
+        if (StringUtils.hasText(e.getMessage())) {
+            message = message + ": " + e.getMessage();
+        }
+        return Result.error(500, message);
     }
 }
