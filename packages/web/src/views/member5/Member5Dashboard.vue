@@ -34,18 +34,16 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { ensureLogin, member5Api } from '../../api/member5'
-
-const checking = ref(false)
-const apiReady = ref(null)
-const metrics = ref([
-  { label: '供应商档案', value: 0, hint: '农资来源维护' },
-  { label: '传感器设备', value: 0, hint: '设备 CRUD 与在线状态' },
-  { label: '农事日志', value: 0, hint: '日常操作留痕' },
-  { label: '产量统计', value: 0, hint: '计划维度分析' },
-])
+import {
+  member5ApiReady as apiReady,
+  member5Checking as checking,
+  member5Metrics as metrics,
+  resetMember5Metrics,
+  setMember5Metrics,
+} from '../../stores/member5DashboardState'
 
 const statusText = computed(() => {
   if (apiReady.value === true) return '已连接后端'
@@ -64,17 +62,13 @@ function totalOf(result) {
   return result.status === 'fulfilled' ? (result.value?.total || 0) : 0
 }
 
-function resetMetrics() {
-  metrics.value = metrics.value.map(item => ({ ...item, value: 0 }))
-}
-
 async function connectBackend() {
   checking.value = true
   try {
     const loggedIn = await ensureLogin()
     if (!loggedIn) {
       apiReady.value = false
-      resetMetrics()
+      resetMember5Metrics()
       return
     }
 
@@ -86,15 +80,15 @@ async function connectBackend() {
     ])
 
     apiReady.value = [suppliers, sensors, logs, yields].some(result => result.status === 'fulfilled')
-    metrics.value = [
+    setMember5Metrics([
       { label: '供应商档案', value: totalOf(suppliers), hint: '农资来源维护' },
       { label: '传感器设备', value: totalOf(sensors), hint: '设备 CRUD 与在线状态' },
       { label: '农事日志', value: totalOf(logs), hint: '日常操作留痕' },
       { label: '产量统计', value: totalOf(yields), hint: '计划维度分析' },
-    ]
+    ])
   } catch {
     apiReady.value = false
-    resetMetrics()
+    resetMember5Metrics()
   } finally {
     checking.value = false
   }
