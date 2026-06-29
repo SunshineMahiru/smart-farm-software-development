@@ -67,7 +67,8 @@ CREATE TABLE `agri_material_supplier` (
                                           `contact_phone` VARCHAR(20) NOT NULL COMMENT '联系电话',
                                           `address` VARCHAR(200) DEFAULT NULL COMMENT '详细地址',
                                           `cooperation_status` ENUM('正常', '终止') DEFAULT '正常' COMMENT '合作状态',
-                                          `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '档案创建时间'
+                                          `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '档案创建时间',
+                                          `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除标记'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='农资供应商信息表';
 
 -- 5. 农资信息表 (Member 1)
@@ -197,6 +198,7 @@ CREATE TABLE `sensor` (
                           `sensor_type` ENUM('温度', '湿度', '光照', '土壤湿度') NOT NULL COMMENT '设备类型',
                           `install_date` DATE DEFAULT NULL COMMENT '安装日期',
                           `status` ENUM('在线', '离线') DEFAULT '在线' COMMENT '在线状态',
+                          `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
                           CONSTRAINT `fk_sensor_plot` FOREIGN KEY (`plot_id`) REFERENCES `plot` (`plot_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='传感器设备表';
 

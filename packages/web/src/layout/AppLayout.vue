@@ -12,6 +12,20 @@
       <nav class="nav-links">
         <RouterLink to="/" class="nav-link">首页</RouterLink>
 
+        <div class="member-group" :class="{ active: isMember3Route }">
+          <RouterLink to="/iot" class="nav-link member-link">
+            <span>成员3</span>
+            <i class="arrow">▼</i>
+          </RouterLink>
+
+          <div class="member-subnav">
+            <RouterLink to="/iot" class="subnav-link">IoT 总览</RouterLink>
+            <RouterLink to="/iot/twin" class="subnav-link">2.5D 热力图</RouterLink>
+            <RouterLink to="/iot/alerts" class="subnav-link">告警管理</RouterLink>
+            <RouterLink to="/iot/history" class="subnav-link">历史曲线</RouterLink>
+          </div>
+        </div>
+
         <div class="member-group" :class="{ active: isMember5Route }">
           <RouterLink to="/member5" class="nav-link member-link">
             <span>成员5</span>
@@ -41,6 +55,7 @@ import { RouterLink, RouterView, useRoute } from 'vue-router'
 
 const route = useRoute()
 
+const isMember3Route = computed(() => route.path.startsWith('/iot'))
 const isMember5Route = computed(() => route.path.startsWith('/member5'))
 </script>
 
