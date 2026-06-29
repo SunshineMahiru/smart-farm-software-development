@@ -195,7 +195,7 @@ CREATE TABLE `sensor` (
                           `plot_id` INT NOT NULL COMMENT '所属地块',
                           `sensor_name` VARCHAR(50) NOT NULL COMMENT '设备名称',
                           `sensor_type` ENUM('温度', '湿度', '光照', '土壤湿度') NOT NULL COMMENT '设备类型',
-                          `install_date` DATE DEFAULT (CURRENT_DATE) COMMENT '安装日期',
+                          `install_date` DATE DEFAULT NULL COMMENT '安装日期',
                           `status` ENUM('在线', '离线') DEFAULT '在线' COMMENT '在线状态',
                           CONSTRAINT `fk_sensor_plot` FOREIGN KEY (`plot_id`) REFERENCES `plot` (`plot_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='传感器设备表';
@@ -251,6 +251,7 @@ CREATE INDEX `idx_planting_plan_crop_id` ON `planting_plan` (`crop_id`);
 CREATE INDEX `idx_irrigation_time` ON `irrigation_record` (`irrigation_time`);
 CREATE INDEX `idx_operation_date` ON `farm_log` (`operation_date`);
 CREATE INDEX `idx_harvest_date` ON `yield_stat` (`harvest_date`);
+CREATE INDEX `idx_grade_weight` ON `yield_stat` (`quality_grade`, `yield_weight`);
 -- IoT核心索引 (替代 PGSQL的BRIN，适配高并发时间倒序检索)
 CREATE INDEX `idx_sensor_type` ON `sensor` (`sensor_type`);
 CREATE INDEX `idx_collect_time` ON `sensor_data` (`collect_time`);
@@ -594,6 +595,7 @@ USE `smart_farm`;
 -- =========================================================================
 
 -- 1. 补全 M2 的 50条 种植计划数据
+INSERT INTO `planting_plan` (`plot_id`, `crop_id`, `start_date`, `expected_harvest`, `plant_area`, `status`, `created_by`)
 WITH plan_seed AS (
     SELECT 1 AS plot_id, 1 AS crop_id, '2026-03-01' AS start_date, '2026-07-05' AS expected_harvest, 50.00 AS plant_area, '进行中' AS status UNION ALL
     SELECT 2, 3, '2026-03-15', '2026-08-20', 40.00, '进行中' UNION ALL
@@ -646,7 +648,6 @@ WITH plan_seed AS (
     SELECT 4, 6, '2026-09-01', '2026-12-10', 11.00, '未开始' UNION ALL
     SELECT 1, 2, '2026-12-01', '2027-04-01', 25.00, '未开始'
 )
-INSERT INTO `planting_plan` (`plot_id`, `crop_id`, `start_date`, `expected_harvest`, `plant_area`, `status`, `created_by`)
 SELECT plot_id,
        crop_id,
        start_date,
@@ -689,8 +690,8 @@ INSERT INTO `irrigation_record` (`plot_id`, `irrigation_time`, `water_amount`, `
                                                                                                             (1, '2026-04-01 08:30:00', 12.50, 2, 'routine spring irrigation'),
                                                                                                             (1, '2026-04-12 09:10:00', 10.20, 2, 'extra water for hotter weather'),
                                                                                                             (2, '2026-04-20 07:50:00', 8.60, 3, 'pre-sowing moisture support'),
-                                                                                                            (4, '2026-04-05 10:00:00', 16.80, 3, 'growth-stage irrigation'),
-                                                                                                            (4, '2026-05-06 06:40:00', 14.30, 2, 'supplemental irrigation');
+                                                                                                            (3, '2026-04-05 10:00:00', 16.80, 3, 'growth-stage irrigation'),
+                                                                                                            (6, '2026-05-06 06:40:00', 14.30, 2, 'supplemental irrigation');
 
 -- 4. 重构并还原 M1 的 500条 递归采购数据 (完美解决外键匹配问题！)
 INSERT INTO `agri_purchase_record` (`material_id`, `supplier_id`, `purchase_qty`, `unit_price`, `purchase_date`, `buyer_id`, `remark`)
@@ -715,36 +716,96 @@ END AS supplier_id,
         ELSE 11.50 + (n % 5) * 0.20
     END AS unit_price,
     DATE_ADD('2026-06-18', INTERVAL n DAY) AS purchase_date,
-    ((n - 1) % 78) + 1 AS buyer_id,
+    buyer.`user_id` AS buyer_id,
     CONCAT('批量扩充采购记录-', n) AS remark
-FROM seq;
+FROM seq
+JOIN (
+    SELECT
+        `user_id`,
+        ROW_NUMBER() OVER (ORDER BY `user_id`) AS rn,
+        COUNT(*) OVER () AS total_count
+    FROM `user`
+) buyer ON buyer.rn = ((seq.n - 1) % buyer.total_count) + 1;
 
--- 5. 补全 M5 的农事日志与产量统计，避免首页相关模块为空
-INSERT INTO `farm_log` (`plan_id`, `operator_id`, `operation_type`, `operation_date`, `description`) VALUES
-                                                                                                         (1, 3, '整地', '2026-03-01', '完成水稻地块翻耕与起垄'),
-                                                                                                         (1, 3, '施肥', '2026-03-08', '施入基肥并完成首轮灌水'),
-                                                                                                         (2, 4, '育苗', '2026-03-16', '辣椒苗床移栽准备完成'),
-                                                                                                         (3, 3, '病虫害巡检', '2026-03-25', '番茄计划完成病虫害抽查'),
-                                                                                                         (5, 4, '采收', '2026-04-10', '草莓计划完成首轮采收'),
-                                                                                                         (10, 3, '追肥', '2026-04-18', '大豆计划追加水溶肥'),
-                                                                                                         (15, 4, '除草', '2026-05-06', '西瓜计划地块完成人工除草'),
-                                                                                                         (16, 3, '病虫害防治', '2026-05-14', '茄子计划完成药剂喷施'),
-                                                                                                         (17, 4, '灌溉联动', '2026-05-22', '水稻计划按墒情执行联动灌溉'),
-                                                                                                         (18, 3, '搭架', '2026-06-05', '辣椒计划完成支架加固'),
-                                                                                                         (27, 4, '整枝', '2026-06-12', '番茄计划完成侧枝修剪'),
-                                                                                                         (40, 3, '巡田', '2026-06-20', '大豆计划田间长势正常');
+-- 5. 补全 M5 的农事日志与产量统计，支撑分页、筛选、汇总和大屏图表
+INSERT INTO `farm_log` (`plan_id`, `operator_id`, `operation_type`, `operation_date`, `description`)
+WITH RECURSIVE seq AS (
+    SELECT 1 AS n UNION ALL SELECT n + 1 FROM seq WHERE n < 180
+)
+SELECT
+    pp.`plan_id`,
+    operator_user.`user_id` AS `operator_id`,
+    CASE seq.n % 10
+        WHEN 0 THEN '整地'
+        WHEN 1 THEN '播种'
+        WHEN 2 THEN '施肥'
+        WHEN 3 THEN '灌溉'
+        WHEN 4 THEN '除草'
+        WHEN 5 THEN '病虫害巡检'
+        WHEN 6 THEN '病虫害防治'
+        WHEN 7 THEN '修剪'
+        WHEN 8 THEN '采收'
+        ELSE '巡田'
+    END AS `operation_type`,
+    LEAST(
+        DATE_ADD(pp.`start_date`, INTERVAL ((seq.n * 7) % GREATEST(DATEDIFF(pp.`expected_harvest`, pp.`start_date`), 1)) DAY),
+        pp.`expected_harvest`
+    ) AS `operation_date`,
+    CONCAT(
+        c.`crop_name`, ' - ',
+        CASE seq.n % 10
+            WHEN 0 THEN '完成地块整理和基础检查'
+            WHEN 1 THEN '完成播种或移栽作业'
+            WHEN 2 THEN '按计划完成追肥'
+            WHEN 3 THEN '根据墒情完成灌溉'
+            WHEN 4 THEN '完成杂草清理'
+            WHEN 5 THEN '完成病虫害巡检并记录风险'
+            WHEN 6 THEN '完成病虫害防治处置'
+            WHEN 7 THEN '完成枝蔓修剪和支架维护'
+            WHEN 8 THEN '完成分批采收和现场称重'
+            ELSE '完成日常巡田和长势记录'
+        END,
+        '，记录批次M5-', seq.n
+    ) AS `description`
+FROM seq
+JOIN `planting_plan` pp ON pp.`plan_id` = ((seq.n - 1) % 50) + 1
+JOIN `crop` c ON c.`crop_id` = pp.`crop_id`
+JOIN (
+    SELECT
+        `user_id`,
+        ROW_NUMBER() OVER (ORDER BY `user_id`) AS rn,
+        COUNT(*) OVER () AS total_count
+    FROM `user`
+    WHERE `role` = '农技员'
+) operator_user ON operator_user.rn = ((seq.n - 1) % operator_user.total_count) + 1;
 
-INSERT INTO `yield_stat` (`plan_id`, `harvest_date`, `yield_weight`, `quality_grade`) VALUES
-                                                                                         (3, '2026-06-10', 1680.00, '优'),
-                                                                                         (5, '2026-04-10', 1420.00, '优'),
-                                                                                         (11, '2025-08-20', 1890.00, '良'),
-                                                                                         (12, '2025-09-10', 1750.00, '优'),
-                                                                                         (13, '2025-07-10', 1615.00, '良'),
-                                                                                         (14, '2026-01-20', 980.00, '良'),
-                                                                                         (23, '2025-06-15', 1725.00, '优'),
-                                                                                         (24, '2025-06-25', 2100.00, '优'),
-                                                                                         (25, '2025-06-01', 1260.00, '良'),
-                                                                                         (29, '2026-06-15', 930.00, '合格');
+INSERT INTO `yield_stat` (`plan_id`, `harvest_date`, `yield_weight`, `quality_grade`)
+WITH RECURSIVE seq AS (
+    SELECT 1 AS n UNION ALL SELECT n + 1 FROM seq WHERE n < 90
+),
+completed_plan AS (
+    SELECT
+        pp.`plan_id`,
+        pp.`expected_harvest`,
+        pp.`plant_area`,
+        ROW_NUMBER() OVER (ORDER BY pp.`plan_id`) AS rn,
+        COUNT(*) OVER () AS total_count
+    FROM `planting_plan` pp
+    WHERE pp.`status` = '已完成'
+)
+SELECT
+    cp.`plan_id`,
+    DATE_ADD(cp.`expected_harvest`, INTERVAL ((seq.n - 1) DIV cp.total_count) DAY) AS `harvest_date`,
+    ROUND(cp.`plant_area` * (28 + (seq.n % 9) * 1.85) + (seq.n % 11) * 13.50, 2) AS `yield_weight`,
+    CASE seq.n % 5
+        WHEN 0 THEN '优'
+        WHEN 1 THEN '良'
+        WHEN 2 THEN '合格'
+        WHEN 3 THEN '优'
+        ELSE '良'
+    END AS `quality_grade`
+FROM seq
+JOIN completed_plan cp ON cp.rn = ((seq.n - 1) % cp.total_count) + 1;
 
 -- 6. 依据 IoT 时序数据回填日报，保证首页日报与统计视图可查询
 INSERT INTO `iot_daily_report` (

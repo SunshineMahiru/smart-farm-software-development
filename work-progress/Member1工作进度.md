@@ -32,6 +32,11 @@
 - 扩展 Sa-Token 权限列表，新增 `user:read`、`plot:read`、`plot:write`。
 - 补充权限不足异常处理，`NotPermissionException` 统一返回 403。
 - 修正后端 Maven 打包类型为 `jar`，确保 `mvn -DskipTests compile` 会真实编译 Java 源码。
+- 数据库整合侧检查 `packages/server/db/init_schema.sql` 与五份原始成员 SQL，确认成员5原始脚本主要包含 `farm_log`、`yield_stat`、索引、视图、过程、触发器，但原始脚本没有初始化数据。
+- 补齐统一初始化脚本中的成员5演示数据：`farm_log` 由少量静态记录改为批量生成 180 条，覆盖整地、播种、施肥、灌溉、除草、病虫害巡检、病虫害防治、修剪、采收、巡田 10 类操作。
+- 补齐统一初始化脚本中的成员5产量统计数据：`yield_stat` 批量生成 90 条，覆盖 `优 / 良 / 合格` 质量等级，用于分页、质量筛选、产量汇总和大屏趋势展示。
+- 补回成员5原始脚本中的 `idx_grade_weight` 复合索引，提升按质量等级和产量重量筛选的查询效率。
+- 修复统一初始化脚本导入阻断点：兼容 MySQL 8.0.12 的 `sensor.install_date` 定义、修正种植计划 CTE 插入语法、避开休耕地块灌溉触发器、采购和农事日志人员外键改为动态引用实际存在用户。
 
 ## 当前已完成能力清单
 
@@ -60,6 +65,7 @@
 - 已接入全局异常处理，覆盖参数校验、未登录、角色不足、权限不足、业务异常。
 - 已接入 WebSocket 服务端基础设施。
 - 已完成成员1绑定的 `user`、`plot` 后端 CRUD 和业务校验。
+- 已完成统一数据库初始化脚本检查与成员5数据补齐，`farm_log=180`、`yield_stat=90`。
 - 已通过 `mvn -DskipTests compile` 编译验证。
 
 ## 当前不足
@@ -75,3 +81,4 @@
 - 登录拿 Token：`POST /sys/user/login`，请求体可使用 `{"username":"admin01","password":"123456"}`。
 - 使用管理员 Token 访问用户写接口和地块写接口。
 - 使用农技员 Token 验证写接口返回 403。
+- SQL 初始化验证：将 `init_schema.sql` 替换为临时库名后导入 MySQL 8.0.12，确认 `farm_log=180`、`yield_stat=90`、`idx_grade_weight` 存在。
