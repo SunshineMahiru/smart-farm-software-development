@@ -60,6 +60,27 @@
 - 为 `SensorSaveRequest`、`IotOverviewVO`、`SensorRecentDataVO`、`DeviceAlertVO`、`SensorHistoryTrendVO`、`SensorHistoryPointVO`、`SensorOnlineStatusVO`、`IotDailyReportVO` 增加字段级接口说明，便于 Swagger 页面直接联调。
 - 同步修正进度文档中的后端真实路径，由 `packages/servrer` 统一更正为 `packages/server`。
 
+## 2026.6.29
+
+- 新增 `SensorDataController`、`SensorDataService`、`SensorDataMapper` 与 `SensorDataPageVO`，补齐 `GET /iot/sensor-data` 分页查询接口，支持按 `sensorId / plotId / 时间范围` 查询时序数据。
+- 新增 `POST /iot/sensor-data` 写入接口，支持写入温度、湿度、土壤湿度、光照等采集值。
+- 写入时序数据后，已实现固定阈值规则判定，会自动生成 `device_alert` 告警记录，并通过现有 `WebSocketServer.broadcastAll` 广播简短告警消息。
+- 新增 `DeviceAlertController`、`DeviceAlertService`、`DeviceAlertManageMapper`，补齐 `GET /iot/alerts`、`GET /iot/alerts/{alertId}`、`PATCH /iot/alerts/{alertId}/status`、`DELETE /iot/alerts/{alertId}`。
+- 同步修正 `IotDashboardMapper.selectOverview()` 中 `在线 / 离线 / 未处理` 的中文乱码统计值，避免概览页统计失真。
+- 已执行远程最新版 `packages/server/db/init_schema.sql`，本机 MySQL 已重建 `smart_farm` 库并导入 `28810` 条时序压测数据。
+- 同步修正数据库初始化脚本，为 `sensor`、`agri_material_supplier` 表补上 `deleted` 逻辑删除列，并已在本机 MySQL 实库执行 `ALTER TABLE` 对齐项目设计。
+- 已实测校验 `sensor`、`sensor_data`、`device_alert`、`agri_material_supplier` 表结构与当前代码映射一致；`sensor.deleted = 0`、`supplier.deleted = 0` 查询已可正常执行。
+- 已在 `packages/server` 下再次执行 `mvn -DskipTests compile`，当前成员3后端改动可编译通过。
+- 已完成运行级联调验证：后端可在 `127.0.0.1:8080` 正常启动，使用 `admin01 / 123456` 可成功登录，并已实际调通 `/iot/overview`、`/iot/sensors`、`/iot/sensor-data`、`/iot/alerts`、`/suppliers`。
+- 已新增前端 `packages/web/src/api/member3.js`，封装成员3的 IoT 总览、告警管理、时序查询、日报生成等接口，并复用自动登录逻辑。
+- 已新增成员3前端页面：`IotDashboardView`、`AlertManageView`、`SensorHistoryView`，并把路由接入 `/iot`、`/iot/alerts`、`/iot/history`。
+- 已在顶部导航加入“成员3”入口，可直接进入 IoT 总览、告警管理和历史曲线页。
+- 已完成双 Y 轴温湿度历史曲线页第一版，可基于真实后端接口绘制 ECharts 折线图，并同步展示时序表格。
+- 已新增 `IotTwinView`，完成第一版 2.5D 大棚热力图页面，使用 `CSS Grid + 3D Transform` 展示棚区热度，并支持从热力图下钻到历史曲线页。
+- 已补热力图详情联动：选中棚区后，右侧会同步加载该传感器最近时序数据和同地块最新告警记录。
+- 已补告警页下钻能力：可从告警记录直接跳转到对应地块关联传感器的历史曲线页。
+- 已执行 `packages/web` 下 `npm run build`，前端构建通过；当前仅存在依赖侧的 chunk 体积与 `@vueuse/core` 注解 warning，不阻塞页面使用。
+
 ## 当前已完成能力清单
 
 ### 后端接口
@@ -67,10 +88,16 @@
 - `GET /iot/overview`
 - `GET /iot/recent-data?sensorId=...&limit=...`
 - `GET /iot/alerts/latest?limit=...`
+- `GET /iot/alerts`
+- `GET /iot/alerts/{alertId}`
+- `PATCH /iot/alerts/{alertId}/status`
+- `DELETE /iot/alerts/{alertId}`
 - `GET /iot/history/trend?sensorId=...&hours=24`
+- `GET /iot/sensor-data`
 - `GET /iot/sensors`
 - `GET /iot/sensors/{sensorId}`
 - `GET /iot/sensors/online-status`
+- `POST /iot/sensor-data`
 - `POST /iot/sensors`
 - `PUT /iot/sensors/{sensorId}`
 - `DELETE /iot/sensors/{sensorId}`
@@ -82,21 +109,40 @@
 - 已建立 `modules/iot` 包结构。
 - 已建立 IoT 查询 Service / Mapper / VO 基础组织方式。
 - 已建立 `sensor` 传感器管理 CRUD 与在线状态分页查询。
+- 已建立 `sensor_data` 分页查询与写入能力，可按传感器、地块和时间范围筛选。
+- 已建立 `device_alert` 管理能力，支持分页筛选、详情、状态更新、删除。
+- 已建立“写入时序数据 -> 阈值判定 -> 自动生成告警 -> WebSocket 广播”的第一版闭环。
+- 已完成成员3相关数据库实库对齐，`sensor` 与 `agri_material_supplier` 的逻辑删除字段已落到初始化脚本和本机 MySQL。
 - 已建立日报聚合、日报落库、日报广播推送的第一版骨架。
 - 已补某传感器近 24 小时温湿度曲线接口，可直接服务前端折线图。
 - 已在数据库初始化脚本中加入 `iot_daily_report` 表。
-- 已补第一批 Swagger/OpenAPI 注解与字段说明。
+- 已补第一批 Swagger/OpenAPI 注解与字段说明，并继续覆盖新增 IoT 接口。
 - 已通过 `mvn -DskipTests compile` 编译验证。
 
 ### 当前不足
 
-- `sensor` 已完成基础 CRUD，但 `device_alert`、`sensor_data` 仍未完成完整管理能力。
-- 还没有实现“写入时序数据后自动判定是否触发告警”的业务逻辑。
 - 还没有真正接入 `Spring AI` 大模型接口。
-- 还没有实现前端 `2.5D` 热力图页面。
-- 还没有实现前端双 Y 轴 ECharts 页面。
-- IoT 模块已补第一批 Swagger 注解，但 `device_alert`、`sensor_data` 等后续接口完成后还需要继续补齐。
+- 成员3前端已完成第一版 IoT 总览、告警管理页、双 Y 轴历史曲线页和 2.5D 热力图页，并已补基础下钻联动，但还没有补传感器管理编辑和更完整的交互细节。
+- 当前自动告警规则仍是固定阈值版本，还没有做更细的作物/地块差异化阈值策略。
 - 还没有补测试数据校验、异常边界验证、接口联调说明。
+
+## 当前可展示效果
+
+- 可展示成员3后端主链路：`sensor`、`sensor_data`、`device_alert`、`iot_daily_report` 已打通。
+- 可展示成员3数据库成果：本机 `smart_farm` 已重建并导入 `28810` 条时序数据，且已对齐逻辑删除字段。
+- 可展示成员3运行级联调：后端已验证可启动，`admin01 / 123456` 可成功登录，IoT 与供应商核心接口已实际返回成功结果。
+- 可展示成员3前端第一版页面：`/iot`、`/iot/twin`、`/iot/history`、`/iot/alerts` 均已接通真实接口。
+- 可展示成员3答辩亮点：2.5D 热力图、双 Y 轴温湿度曲线、告警下钻、热力图右侧联动最近数据与同地块告警。
+
+## 当前漏洞与风险
+
+- 漏洞 1：成员3前端当前为了联调方便，在 `member3.js` 中写死了演示账号 `admin01 / 123456` 自动登录逻辑，只适合本地演示，不适合正式提交或部署。
+- 漏洞 2：前端仍没有正式登录页和路由守卫，当前属于“演示可用、产品化未完成”状态。
+- 漏洞 3：自动告警规则仍是固定阈值，未结合作物类型、地块差异、季节条件做动态判断，误报/漏报风险仍然存在。
+- 风险 4：告警页“查看曲线”当前按地块映射到第一条传感器记录做跳转，如果同一地块后续挂多个传感器，跳转目标可能不够精确。
+- 风险 5：热力图右侧“同地块最新告警”当前是按 `plotId` 聚合展示，不是按单传感器精确过滤，适合答辩演示，但还不算最终精细版本。
+- 风险 6：前端构建虽然已通过，但仍存在 chunk 体积偏大和 `@vueuse/core` 注解 warning，后续若继续扩展页面，首屏体积需要继续优化。
+- 风险 7：目前缺少自动化测试和专门的异常场景回归，后续改动仍可能引入接口兼容或页面联动回归问题。
 
 ## 后续任务总清单
 
@@ -106,15 +152,15 @@
 说明：需要有新增、分页查询、详情、修改、删除接口，字段至少覆盖 `plot_id`、`sensor_name`、`sensor_type`、`install_date`、`status`。
 完成标准：前端可以对传感器做完整维护；接口返回统一 `Result<T>`；具备基础参数校验。
 
-- 任务 2：补齐 `device_alert` 告警记录 CRUD 与查询接口。
+- 任务 2（已完成）：补齐 `device_alert` 告警记录 CRUD 与查询接口。
 说明：除标准 CRUD 外，至少要支持按时间范围、地块、告警状态筛选。
 完成标准：能用于后续告警管理页面；能够清楚区分“未处理/已处理”。
 
-- 任务 3：补齐 `sensor_data` 时序数据查询接口。
+- 任务 3（已完成）：补齐 `sensor_data` 时序数据查询接口。
 说明：时序数据一般不建议做任意删除编辑，但至少要支持分页查询、按 `sensor_id` 查询、按时间范围查询、近 24 小时查询。
 完成标准：能够给折线图和热力图页面提供稳定数据源。
 
-- 任务 4：实现“写入时序数据 -> 规则判定 -> 自动生成告警”链路。
+- 任务 4（已完成）：实现“写入时序数据 -> 规则判定 -> 自动生成告警”链路。
 说明：新增一个写入传感器数据接口，插入 `sensor_data` 后按阈值判定是否生成 `device_alert`。阈值可以先按温度、湿度、土壤湿度做固定规则。
 完成标准：调用一次数据写入接口后，如果数据越界，数据库中能新增一条告警记录。
 
@@ -156,33 +202,42 @@
 
 ### 第四阶段：完成成员3前端页面
 
-- 任务 13：新建 IoT 模块页面目录。
+- 任务 13（已完成）：新建 IoT 模块页面目录。
 说明：优先规划 `packages/web/src/views/iot`，建议至少分为 `SensorManage.vue`、`SensorHistory.vue`、`AlertManage.vue`、`IotTwinDashboard.vue`。
 完成标准：目录和职责清晰，不和其他成员页面混杂。
 
-- 任务 14：完成“传感器管理”页面。
+- 任务 14（进行中）：完成“传感器管理”页面。
 说明：表格 + 弹窗表单，支持新增、编辑、删除、状态切换。
 完成标准：和后端 `sensor` CRUD 联调通过。
 
-- 任务 15：完成“告警记录管理”页面。
+- 任务 15（已完成）：完成“告警记录管理”页面。
 说明：支持表格查看、状态筛选、时间筛选、标记处理。
 完成标准：和 `device_alert` 接口联调通过。
 
-- 任务 16：完成“时序数据查询”页面。
+- 任务 16（已完成）：完成“时序数据查询”页面。
 说明：支持按传感器、按时间范围查询，支持表格和图表切换。
 完成标准：可作为答辩时展示“2.8 万条数据查询”的页面入口。
 
-- 任务 17：完成双 Y 轴 ECharts 折线图组件。
+- 任务 17（已完成）：完成双 Y 轴 ECharts 折线图组件。
 说明：一条轴展示温度，一条轴展示湿度；支持缩放、时间轴滑动。
 完成标准：点击某地块或某传感器后可直接打开该图表。
 
-- 任务 18：完成 2.5D 大棚热力图页面。
+- 任务 18（已完成）：完成 2.5D 大棚热力图页面。
 说明：按照总项目要求，用 `CSS Grid / Canvas / 3D Transform` 实现，不要退化成普通二维表格。颜色要根据实时温度或综合状态动态变化。
 完成标准：能直观展示多个地块/大棚的空间感和颜色热度差异；点击后联动侧边栏或图表。
 
 - 任务 19：接入 WebSocket 客户端通知。
 说明：项目已有前端 `websocket.js` 基础代码，成员3页面需要确保能接收到日报与告警广播。
 完成标准：手动触发日报生成后，前端能弹出 Notification。
+
+## 接下来建议优先做的事
+
+- P0：移除成员3前端硬编码自动登录，补正式登录入口或至少抽成演示环境开关，避免把演示账号逻辑带进最终提交。
+- P0：补成员3传感器管理页的新增、编辑、删除闭环，把成员3前端从“可展示”推进到“可操作”。
+- P1：把热力图、告警页、历史曲线三页的联动继续细化，例如地块到多传感器选择、告警到精确传感器跳转。
+- P1：补 `docs/api-contract.yaml`、`docs/websocket-protocol.md` 和成员3联调说明，让老师和组员可以按步骤复现。
+- P2：接入 `Spring AI` 真模型，补失败降级和重试，把日报从规则文案升级为项目亮点。
+- P2：补异常测试和性能验证说明，重点覆盖 `2.8 万条` 时序数据查询、WebSocket 推送和告警规则边界。
 
 ### 第五阶段：联调、验收、答辩材料
 
@@ -222,18 +277,29 @@
 
 - 编译验证：在 `packages/server` 下执行 `mvn -DskipTests compile`。
 - 后端启动：在 `packages/server` 下执行 `mvn spring-boot:run`。
-- 登录拿 Token：`POST /sys/user/login?username=admin&password=123456`
+- 登录拿 Token：`POST /sys/user/login`，当前已验证可用账号为 `admin01 / 123456`
 - 已完成接口：
   - `GET /iot/overview`
   - `GET /iot/recent-data?sensorId=1&limit=10`
   - `GET /iot/alerts/latest?limit=5`
+  - `GET /iot/alerts?pageNum=1&pageSize=10&status=未处理`
+  - `GET /iot/alerts/1`
+  - `PATCH /iot/alerts/1/status`
   - `GET /iot/history/trend?sensorId=1&hours=24`
+  - `GET /iot/sensor-data?pageNum=1&pageSize=20&sensorId=1`
+  - `POST /iot/sensor-data`
   - `POST /iot/reports/generate`
   - `GET /iot/reports/latest`
+- 前端验证：
+  - `/iot`
+  - `/iot/alerts`
+  - `/iot/history`
+  - `/iot/twin`
 - 数据库验证重点：
   - `sensor`
   - `sensor_data`
   - `device_alert`
+  - `agri_material_supplier`
   - `iot_daily_report`
 
 ## 以后更新这个文件的规则
