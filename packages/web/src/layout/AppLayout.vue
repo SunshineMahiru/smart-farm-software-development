@@ -26,7 +26,12 @@
         <div class="member-group" :class="{ active: isMember2Route }">
           <RouterLink to="/member2" class="nav-link member-link">
             <span>实时调度与生命周期</span>
+            <i class="arrow">▼</i>
           </RouterLink>
+
+          <div class="member-subnav">
+            <RouterLink to="/member2" class="subnav-link">种植计划与日历</RouterLink>
+          </div>
         </div>
 
         <div class="member-group" :class="{ active: isMember3Route }">
@@ -88,9 +93,7 @@ const router = useRouter()
 const currentUser = ref(readCachedUser())
 
 const member1Menus = computed(() => {
-  const menus = [
-    { title: '地块台账', path: '/sys/plots' },
-  ]
+  const menus = [{ title: '地块台账', path: '/sys/plots' }]
   if (currentUser.value.role === '管理员') {
     menus.unshift({ title: '用户权限', path: '/sys/users' })
   }

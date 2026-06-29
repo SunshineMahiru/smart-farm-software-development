@@ -2,18 +2,19 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AppLayout from '../layout/AppLayout.vue'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/login/LoginView.vue'
-import UserManagePage from '../views/sys/UserManagePage.vue'
-import PlotManagePage from '../views/sys/PlotManagePage.vue'
 import AlertManageView from '../views/iot/AlertManageView.vue'
 import IotDashboardView from '../views/iot/IotDashboardView.vue'
 import SensorHistoryView from '../views/iot/SensorHistoryView.vue'
 import IotTwinView from '../views/iot/IotTwinView.vue'
-import ModulePlaceholderView from '../views/ModulePlaceholderView.vue'
 import Member5Dashboard from '../views/member5/Member5Dashboard.vue'
-import SupplierPage from '../views/member5/SupplierPage.vue'
-import SensorPage from '../views/member5/SensorPage.vue'
 import FarmLogPage from '../views/member5/FarmLogPage.vue'
+import SensorPage from '../views/member5/SensorPage.vue'
+import SupplierPage from '../views/member5/SupplierPage.vue'
 import YieldStatPage from '../views/member5/YieldStatPage.vue'
+import ModulePlaceholderView from '../views/ModulePlaceholderView.vue'
+import Member2PlanView from '../views/plan/Member2PlanView.vue'
+import PlotManagePage from '../views/sys/PlotManagePage.vue'
+import UserManagePage from '../views/sys/UserManagePage.vue'
 
 const routes = [
   {
@@ -29,7 +30,7 @@ const routes = [
       { path: '', name: 'home', component: HomeView },
       { path: 'sys/users', name: 'sys-users', component: UserManagePage, meta: { title: '用户权限管理' } },
       { path: 'sys/plots', name: 'sys-plots', component: PlotManagePage, meta: { title: '地块台账管理' } },
-      { path: 'member2', name: 'member2', component: ModulePlaceholderView, meta: { title: '实时调度与生命周期' } },
+      { path: 'member2', name: 'member2', component: Member2PlanView, meta: { title: '实时调度与生命周期' } },
       { path: 'iot', name: 'iot-dashboard', component: IotDashboardView },
       { path: 'iot/alerts', name: 'iot-alerts', component: AlertManageView },
       { path: 'iot/history', name: 'iot-history', component: SensorHistoryView },
