@@ -13,7 +13,7 @@
         <RouterLink to="/" class="nav-link">首页</RouterLink>
 
         <div class="member-group" :class="{ active: isMember1Route }">
-          <RouterLink to="/sys/users" class="nav-link member-link">
+          <RouterLink to="/sys" class="nav-link member-link">
             <span>系统基建与空间资产</span>
             <i class="arrow">▼</i>
           </RouterLink>
@@ -93,9 +93,12 @@ const router = useRouter()
 const currentUser = ref(readCachedUser())
 
 const member1Menus = computed(() => {
-  const menus = [{ title: '地块台账', path: '/sys/plots' }]
+  const menus = [
+    { title: '系统工作台', path: '/sys' },
+    { title: '地块台账', path: '/sys/plots' },
+  ]
   if (currentUser.value.role === '管理员') {
-    menus.unshift({ title: '用户权限', path: '/sys/users' })
+    menus.splice(1, 0, { title: '用户权限', path: '/sys/users' })
   }
   return menus
 })

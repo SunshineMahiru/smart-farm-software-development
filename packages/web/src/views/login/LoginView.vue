@@ -3,8 +3,14 @@
     <div class="login-shell">
       <div class="login-visual panel">
         <p class="eyebrow">Member 1 Security Gateway</p>
-        <h1>智慧农场<br />统一入口</h1>
-        <p>登录后进入系统主骨架，按角色动态展示用户权限管理、地块台账与各成员业务模块。</p>
+        <h1>系统基建<br />安全入口</h1>
+        <p>登录后进入统一控制台，由成员一提供 Sa-Token 鉴权、路由守卫、动态菜单、用户权限与地块空间资产底座。</p>
+
+        <div class="security-points">
+          <span>RBAC 权限</span>
+          <span>路由守卫</span>
+          <span>空间资产</span>
+        </div>
 
         <div class="field-orbit">
           <span v-for="item in 20" :key="item" :style="{ '--delay': `${item * 34}ms` }" />
@@ -18,6 +24,17 @@
             <h2>账号登录</h2>
             <p class="muted">默认演示账号：admin01 / 123456</p>
           </div>
+        </div>
+
+        <div class="identity-strip">
+          <button type="button" :class="{ active: form.username === 'admin01' }" @click="useDemo('admin01')">
+            <span>管理员</span>
+            <strong>admin01</strong>
+          </button>
+          <button type="button" :class="{ active: form.username === 'tech01' }" @click="useDemo('tech01')">
+            <span>农技员</span>
+            <strong>tech01</strong>
+          </button>
         </div>
 
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent>
@@ -53,6 +70,11 @@ const form = reactive({
 const rules = {
   username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+}
+
+function useDemo(username) {
+  form.username = username
+  form.password = '123456'
 }
 
 async function submit() {
@@ -92,6 +114,7 @@ async function submit() {
 }
 
 .login-visual {
+  position: relative;
   min-height: 620px;
   padding: clamp(30px, 6vw, 64px);
   overflow: hidden;
@@ -117,6 +140,23 @@ async function submit() {
   color: rgba(255, 253, 242, 0.78);
   font-size: 18px;
   line-height: 1.8;
+}
+
+.security-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.security-points span {
+  padding: 9px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--lime);
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .field-orbit {
@@ -164,6 +204,40 @@ async function submit() {
   margin: 0 0 4px;
   color: var(--leaf-dark);
   font-size: 28px;
+}
+
+.identity-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.identity-strip button {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.54);
+  color: var(--leaf-dark);
+  cursor: pointer;
+  text-align: left;
+}
+
+.identity-strip button.active {
+  border-color: rgba(31, 111, 67, 0.42);
+  background: rgba(31, 111, 67, 0.1);
+}
+
+.identity-strip span {
+  color: rgba(23, 39, 28, 0.62);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.identity-strip strong {
+  font-size: 18px;
 }
 
 .login-button {

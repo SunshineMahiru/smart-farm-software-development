@@ -13,6 +13,7 @@ import SupplierPage from '../views/member5/SupplierPage.vue'
 import YieldStatPage from '../views/member5/YieldStatPage.vue'
 import ModulePlaceholderView from '../views/ModulePlaceholderView.vue'
 import Member2PlanView from '../views/plan/Member2PlanView.vue'
+import SystemDashboardPage from '../views/sys/SystemDashboardPage.vue'
 import PlotManagePage from '../views/sys/PlotManagePage.vue'
 import UserManagePage from '../views/sys/UserManagePage.vue'
 
@@ -28,6 +29,7 @@ const routes = [
     component: AppLayout,
     children: [
       { path: '', name: 'home', component: HomeView },
+      { path: 'sys', name: 'sys-dashboard', component: SystemDashboardPage, meta: { title: '系统基建工作台' } },
       { path: 'sys/users', name: 'sys-users', component: UserManagePage, meta: { title: '用户权限管理' } },
       { path: 'sys/plots', name: 'sys-plots', component: PlotManagePage, meta: { title: '地块台账管理' } },
       { path: 'member2', name: 'member2', component: Member2PlanView, meta: { title: '实时调度与生命周期' } },

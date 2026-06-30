@@ -9,7 +9,7 @@
         </p>
         <div class="hero-actions">
           <RouterLink to="/iot" class="primary-link">进入 IoT 孪生与 AI 算法</RouterLink>
-          <RouterLink to="/sys/users" class="ghost-link">系统基建与空间资产</RouterLink>
+          <RouterLink to="/sys" class="ghost-link">系统基建与空间资产</RouterLink>
         </div>
       </div>
       <div class="field-map">
@@ -31,7 +31,7 @@
 import { RouterLink } from 'vue-router'
 
 const modules = [
-  { scope: '成员1', title: '系统基建与空间资产', desc: '账号权限、动态菜单、用户管理与地块台账', path: '/sys/users' },
+  { scope: '成员1', title: '系统基建与空间资产', desc: '账号权限、动态菜单、用户管理与地块台账', path: '/sys' },
   { scope: '成员2', title: '实时调度与生命周期', desc: '作物周期、种植计划与调度通知入口', path: '/member2' },
   { scope: '成员3', title: 'IoT 孪生与 AI 算法', desc: '传感器状态、热力图、告警与农情日报', path: '/iot' },
   { scope: '成员4', title: '农资供应链与核心业务', desc: '农资供应、库存、采购入库与业务一致性入口', path: '/member4' },

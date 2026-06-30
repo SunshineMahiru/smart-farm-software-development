@@ -1,16 +1,25 @@
 <template>
   <section class="page-shell stack-page">
+    <div class="sys-page-hero panel">
+      <div>
+        <p class="eyebrow">Spatial Asset Ledger</p>
+        <h1 class="page-title">地块空间资产</h1>
+        <p class="muted">统一维护地块面积、土壤、位置与状态流转，为种植计划、IoT 传感器、农事日志和产量统计提供共享底座。</p>
+      </div>
+      <RouterLink to="/sys" class="back-dashboard">返回系统工作台</RouterLink>
+    </div>
+
     <Member1DataPanel title="地块台账管理" description="维护地块面积、土壤、位置与状态流转，作为种植、IoT 和农事模块的空间资产基础。">
       <template #actions>
         <el-button type="primary" :disabled="!isAdmin" @click="openCreate">新增地块</el-button>
       </template>
 
       <div class="plot-summary">
-        <div v-for="item in summaryCards" :key="item.status" class="summary-card" :class="`status-${item.status}`">
+        <button v-for="item in summaryCards" :key="item.status" type="button" class="summary-card" :class="[`status-${item.status}`, { active: query.status === item.status }]" @click="setStatus(item.status)">
           <span>{{ item.status }}</span>
           <strong>{{ item.totalCount || 0 }}</strong>
           <small>{{ item.totalArea || 0 }} 亩</small>
-        </div>
+        </button>
       </div>
 
       <div class="toolbar">
@@ -20,6 +29,7 @@
         </el-select>
         <el-input v-model="query.location" placeholder="位置" clearable style="width: 180px" @keyup.enter="loadData" />
         <el-button type="primary" @click="loadData">查询</el-button>
+        <el-button @click="resetQuery">重置</el-button>
       </div>
 
       <el-alert v-if="!isAdmin" class="readonly-alert" title="当前账号不是管理员，仅允许查看地块台账。" type="info" :closable="false" />
@@ -104,6 +114,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { RouterLink } from 'vue-router'
 import Member1DataPanel from '../../components/Member1DataPanel.vue'
 import { member1Api } from '../../api/member1'
 
@@ -147,6 +158,17 @@ function statusType(status) {
     休耕: 'warning',
     维护中: 'danger',
   }[status] || 'info'
+}
+
+function setStatus(status) {
+  query.status = query.status === status ? '' : status
+  query.pageNum = 1
+  loadData()
+}
+
+function resetQuery() {
+  Object.assign(query, { pageNum: 1, pageSize: query.pageSize, keyword: '', status: '', soilType: '', location: '' })
+  loadData()
 }
 
 async function loadData() {
@@ -239,15 +261,62 @@ onMounted(loadData)
 
 <style scoped>
 .stack-page { display: grid; gap: 18px; }
+.sys-page-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 26px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(184, 219, 99, 0.34), transparent 18rem),
+    rgba(255, 255, 250, 0.82);
+}
+
+.sys-page-hero .muted {
+  max-width: 760px;
+  margin: 14px 0 0;
+  line-height: 1.7;
+}
+
+.back-dashboard {
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.66);
+  color: var(--leaf-dark);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 .plot-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
-.summary-card { padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.64); }
+.summary-card {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--leaf);
+  border-radius: 12px;
+  background: rgba(255,255,255,.64);
+  cursor: pointer;
+  text-align: left;
+}
+.summary-card.active {
+  border-color: rgba(31, 111, 67, 0.42);
+  border-left-color: var(--leaf);
+  background: rgba(31, 111, 67, 0.1);
+}
 .summary-card span, .summary-card small { color: rgba(23,39,28,.66); }
 .summary-card strong { display: block; margin: 8px 0; color: var(--leaf-dark); font-size: 30px; }
+.summary-card.status-空闲 { border-left-color: #7b8794; }
+.summary-card.status-种植中 { border-left-color: var(--leaf); }
+.summary-card.status-休耕 { border-left-color: var(--clay); }
+.summary-card.status-维护中 { border-left-color: #b44747; }
 .readonly-alert { margin-bottom: 14px; }
 .pager { justify-content: flex-end; margin-top: 16px; }
 .status-flow { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 12px; }
 .status-flow strong { color: var(--leaf-dark); }
 .status-flow em { color: var(--clay); font-style: normal; font-weight: 900; }
-@media (max-width: 760px) { .plot-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  .sys-page-hero { align-items: flex-start; flex-direction: column; }
+  .plot-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 520px) { .plot-summary { grid-template-columns: 1fr; } }
 </style>
